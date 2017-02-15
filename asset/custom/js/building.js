@@ -33,6 +33,9 @@ function Board(canvas) {
     this.y = this.x;
     this.width = canvas.width;
     this.height = canvas.height;
+    this.dragStart = function(mouse) {
+        alert(mouse.x);
+    };
 
     this.draw = function(ctx) {
     };
