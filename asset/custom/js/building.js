@@ -7,26 +7,31 @@
 
 window.onload = function() {
     var canvas = document.getElementById("building-canvas"),
-        ctx = canvas.getContext("2d"),
+        $canvas = $('#building-canvas');
+
+    canvas.width = $canvas.width();
+    canvas.height = $canvas.height();
+
+    var ctx = canvas.getContext("2d"),
         components = [],
-        board = new Board(canvas),
+        plane = new Plane(canvas),
         mouse = {
             x: canvas.width / 2, //Initial position
             y: canvas.height / 2
         };
 
-    components.push(board);
+    components.push(plane);
 
     listenEvents(canvas, ctx, mouse, components);
 
     (function draw() {
         window.requestAnimationFrame(draw);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        board.draw(ctx);
+        plane.draw(ctx);
     })();
 };
 
-function Board(canvas) {
+function Plane(canvas) {
     var me = this;
 
     this.x = 0;
@@ -34,7 +39,7 @@ function Board(canvas) {
     this.width = canvas.width;
     this.height = canvas.height;
     this.dragStart = function(mouse) {
-        alert(mouse.x);
+        //alert(mouse.x);
     };
 
     this.draw = function(ctx) {
@@ -42,9 +47,9 @@ function Board(canvas) {
 
     this.hitTest = function(ctx, mouse) {
         var x = mouse.x,
-            y = mouse.y,
-            hitY = this.y - this.height / 2;
-        return (x > this.x && x < this.x + this.width && y > hitY && y < hitY + this.height)
+            y = mouse.y;
+        return (x > this.x && x < (this.x + this.width)
+                && y > this.y && y < (this.y + this.height));
     };
 }
 
