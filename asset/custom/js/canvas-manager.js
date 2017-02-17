@@ -86,6 +86,7 @@ CanvasRenderingContext2D.prototype.dottedLine = function(x1, y1, x2, y2, dotLen)
 };
 
 function Template() {
+    this.active = true;
     this.dragStart = function() {
     };
     this.dragging = function() {
