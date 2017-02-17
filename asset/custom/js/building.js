@@ -4,16 +4,17 @@
  * and open the template in the editor.
  */
 
+var canvas = document.getElementById("building-canvas"),
+    components = [];
 
 window.onload = function() {
-    var canvas = document.getElementById("building-canvas"),
-        $canvas = $('#building-canvas');
+    var $canvas = $('#building-canvas'),
+        canvas = document.getElementById("building-canvas");
 
     canvas.width = $canvas.width();
     canvas.height = $canvas.height();
 
     var ctx = canvas.getContext("2d"),
-        components = [],
         plane = new Plane(canvas),
         mouse = {
             x: canvas.width / 2, //Initial position
@@ -27,10 +28,25 @@ window.onload = function() {
     (function draw() {
         window.requestAnimationFrame(draw);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        plane.draw(ctx);
+
+        components.forEach(function(component) {
+            component.draw(ctx);
+        });
     })();
 };
 
+var Building = (function() {
+
+    function createRectangle() {
+        components.push(new Rectangle(canvas));
+    }
+
+    return {
+        createRectangle: createRectangle
+    };
+})();
+
+Plane.prototype = new Template();
 function Plane(canvas) {
     var me = this;
 
@@ -39,7 +55,6 @@ function Plane(canvas) {
     this.width = canvas.width;
     this.height = canvas.height;
     this.dragStart = function(mouse) {
-        //alert(mouse.x);
     };
 
     this.draw = function(ctx) {
@@ -53,57 +68,42 @@ function Plane(canvas) {
     };
 }
 
-function Striker(board, components) {
-    var wrapperX = board.x + 20,
-        wrapperY = board.y + board.height + 20,
-        wrapperWidth = 200,
-        wrapperHeight = 50,
-        fillColor = '#FFAA00',
-        originalWidth = wrapperWidth - 40;
+Rectangle.prototype = new Template();
+function Rectangle(canvas) {
+    var strokeColour = 'blue';
 
-    this.height = 8;
-    this.x = wrapperX + 20;
-    this.y = wrapperY + wrapperHeight / 2;
-    this.width = originalWidth;
+    this.width = 300;
+    this.height = 200;
+    this.x = canvas.width / 2 - this.width / 2;
+    this.y = canvas.height / 2 - this.height / 2;
     this.draw = function(ctx) {
-        ctx.strokeRect(wrapperX, wrapperY, wrapperWidth, wrapperHeight);
-
-        var prevFill = ctx.strokeStyle,
-            prevLine = ctx.lineWidth;
-        ctx.lineCap = 'round';
-        ctx.lineWidth = this.height;
-        ctx.strokeStyle = fillColor;
+        var prevFill = ctx.strokeStyle;
+        
         ctx.beginPath();
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x + this.width, this.y);
+        ctx.strokeStyle = strokeColour;
+        ctx.rect(this.x, this.y, this.width, this.height);
         ctx.stroke();
         ctx.strokeStyle = prevFill;
-        ctx.lineWidth = prevLine;
+        ctx.closePath();
     };
     this.dragStart = function(mouse) {
         this.startX = mouse.x;
+        this.startY = mouse.y;
     };
     this.dragging = function(mouse) {
-        var width = this.startX - mouse.x;
-        if(width > originalWidth)
-            width = originalWidth;
-        if(width > 0) {
-            this.width = originalWidth - width;
-            components.cueStick.pullBack(width);
-        }
-
+        this.x += mouse.x - this.startX;
+        this.y += mouse.y - this.startY;
+        this.startX = mouse.x;
+        this.startY = mouse.y;
     };
     this.dragEnd = function(mouse) {
-        if(this.width < originalWidth && this.width >= 0) {
-            components.cueStick.reset();
-        }
-        this.width = originalWidth;
+
     };
 
     this.hitTest = function(ctx, mouse) {
         var x = mouse.x,
-            y = mouse.y,
-            hitY = this.y - this.height / 2;
-        return (x > this.x && x < this.x + this.width && y > hitY && y < hitY + this.height)
+            y = mouse.y;
+        return (x > this.x && x < (this.x + this.width)
+                && y > this.y && y < (this.y + this.height));
     };
 }
